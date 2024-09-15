@@ -1,5 +1,5 @@
 name: simple_template_engine
-description: A sample command-line application.
+description: A dynamic template rendering engine.
 version: 1.0.0
 repository: https://github.com/wdestroier/simple_template_engine
 
