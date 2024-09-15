@@ -14,7 +14,9 @@ dependencies:
 ```
 
 ## Usage
+```dart
 import 'package:simple_template_engine/simple_template_engine.dart';
+```
 
 ### Basic example
 ```dart
