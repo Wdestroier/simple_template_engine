@@ -2,11 +2,13 @@ import 'package:simple_template_engine/simple_template_engine.dart';
 import 'package:test/test.dart';
 
 main() {
+  final stopwatch = Stopwatch()..start();
+
   group('TemplateEngine Tests', () {
     test('Render plain text without expressions', () {
       final template = 'Hello, world!';
 
-      final output = templateEngine(template);
+      final output = executeTemplate(template);
 
       expect(output.trim(), equals('Hello, world!'));
     });
@@ -14,7 +16,7 @@ main() {
     test('Render template with a single variable', () {
       final template = 'Hello, <% name %>!';
 
-      final output = templateEngine(template, name: 'Dart');
+      final output = executeTemplate(template, name: 'Dart');
 
       expect(output.trim(), equals('Hello, Dart!'));
     });
@@ -26,8 +28,8 @@ main() {
       <% } %>
       ''';
 
-      var firstOutput = templateEngine(template, showGreeting: true);
-      final secondOutput = templateEngine(template, showGreeting: false);
+      var firstOutput = executeTemplate(template, showGreeting: true);
+      final secondOutput = executeTemplate(template, showGreeting: false);
 
       expect(firstOutput.trim(), equals('Hello, world!'));
       expect(secondOutput.trim(), equals(''));
@@ -40,7 +42,7 @@ main() {
       <% } %>
       ''';
 
-      final output = templateEngine(template);
+      final output = executeTemplate(template);
 
       expect(
           output.trim(),
@@ -60,7 +62,7 @@ main() {
 
       // ignore: prefer_function_declarations_over_variables
       final output = () {
-        return templateEngine(
+        return executeTemplate(
           template,
           data: {'lang': 'Dart', 'type': 'Programming'},
         );
@@ -77,7 +79,7 @@ main() {
       <% } %>
       ''';
 
-      final output = templateEngine(template, items: ['apple', 'banana']);
+      final output = executeTemplate(template, items: ['apple', 'banana']);
 
       expect(
           output.trim(),
@@ -89,7 +91,7 @@ main() {
     test('Render template with escaping special characters', () {
       final template = 'Special characters: <% symbols %>';
 
-      final output = templateEngine(template, symbols: '<>&"\'');
+      final output = executeTemplate(template, symbols: '<>&"\'');
 
       expect(output.trim(), equals('Special characters: <>&"\''));
     });
@@ -101,7 +103,7 @@ main() {
       <% } %>
       ''';
 
-      final output = templateEngine(template, items: {'apple', 'banana'});
+      final output = executeTemplate(template, items: {'apple', 'banana'});
 
       expect(
           output.trim(),
@@ -125,7 +127,7 @@ main() {
       <% } %>
       ''';
 
-      final output = templateEngine(template, outerList: [
+      final output = executeTemplate(template, outerList: [
         {
           'innerList': [1, 2]
         },
@@ -146,4 +148,6 @@ main() {
               .trim()));
     });
   });
+
+  print('Ran tests in ${stopwatch.elapsed.inMilliseconds}ms.');
 }

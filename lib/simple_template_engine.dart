@@ -2,13 +2,13 @@ import 'package:dart_eval/dart_eval.dart';
 import 'package:dart_eval/dart_eval_bridge.dart';
 import 'package:dart_eval/stdlib/core.dart';
 
-final templateEngine = TemplateEngine() as dynamic;
+final executeTemplate = _TemplateEngine() as dynamic;
 
-class TemplateEngine {
+class _TemplateEngine {
   // Matches template expressions in the form of <% ... %>.
-  final templateExpressionRegex = RegExp(r'<%([^%>]+)?%>');
+  final _templateExpressionRegex = RegExp(r'<%([^%>]+)?%>');
   // Matches control flow statements, except return.
-  final controlFlowKeywordsRegex = RegExp(
+  final _controlFlowKeywordsRegex = RegExp(
       r'^( )?(if|else|for|switch|case|default|break|continue|do|while|try|catch|finally|rethrow|{|})');
 
   @override
@@ -38,7 +38,7 @@ class TemplateEngine {
 
   _interpretTemplate(String template, Map<String, dynamic> arguments) {
     final library = _generateLibrary(template, arguments);
-    return interpret(library, arguments);
+    return _interpret(library, arguments);
   }
 
   // The library contains the generated Dart code from the template.
@@ -67,25 +67,25 @@ class TemplateEngine {
     var cursor = 0;
 
     // Process each template expression and convert it into Dart code.
-    for (final match in templateExpressionRegex.allMatches(template)) {
+    for (final match in _templateExpressionRegex.allMatches(template)) {
       // Add plain text before the match.
-      addText(body, template.substring(cursor, match.start));
+      _addText(body, template.substring(cursor, match.start));
       // Add Dart code within the template.
-      addText(body, match.group(1)!, true);
+      _addText(body, match.group(1)!, true);
       cursor = match.end;
     }
 
     // Add any remaining text.
-    addText(body, template.substring(cursor));
+    _addText(body, template.substring(cursor));
     body.write('return result.join();');
 
     return body.toString();
   }
 
   // Adds a piece of code, determining if it's Dart code or plain text.
-  addText(StringBuffer body, String text, [bool isDart = false]) {
+  _addText(StringBuffer body, String text, [bool isDart = false]) {
     if (isDart) {
-      body.write(controlFlowKeywordsRegex.hasMatch(text)
+      body.write(_controlFlowKeywordsRegex.hasMatch(text)
           ? '$text\n'
           : 'result.add(${text.trim()});\n');
     } else if (text.isNotEmpty) {
@@ -94,7 +94,7 @@ class TemplateEngine {
     }
   }
 
-  interpret(String library, Map<String, dynamic> namedArgs) {
+  _interpret(String library, Map<String, dynamic> namedArgs) {
     // Compile and evaluate the code.
     final program = Compiler().compile({
       'simple_template_engine': {'main.dart': library}
@@ -102,20 +102,20 @@ class TemplateEngine {
     final runtime = Runtime.ofProgram(program);
 
     // Wrap arguments using dart_eval compatible types.
-    final boxedArgs = namedArgs.values.map(wrapValue).toList();
+    final boxedArgs = namedArgs.values.map(_wrapValue).toList();
 
-    return unwrapValue(runtime.executeLib(
+    return _unwrapValue(runtime.executeLib(
         'package:simple_template_engine/main.dart', 'build', boxedArgs));
   }
 
   // Method to wrap different types in their respective $Value types.
-  wrapValue(value) {
+  _wrapValue(value) {
     return switch (value) {
       String() => $String(value),
-      List() => $List.wrap(value.map(wrapValue).toList()),
-      Map() =>
-        $Map.wrap(value.map((k, v) => MapEntry(wrapValue(k), wrapValue(v)))),
-      Set() => $List.wrap(value.map(wrapValue).toList()),
+      List() => $List.wrap(value.map(_wrapValue).toList()),
+      Map() => $Map.wrap(value.map(
+          (k, v) => $MapEntry.wrap(MapEntry(_wrapValue(k), _wrapValue(v))))),
+      Set() => $List.wrap(value.map(_wrapValue).toList()),
       int() => $int(value),
       double() => $double(value),
       bool() => $bool(value),
@@ -125,5 +125,5 @@ class TemplateEngine {
   }
 
   // Method to unwrap different $Value types to their respective Dart types.
-  unwrapValue(value) => (value is $Value) ? value.$value : value;
+  _unwrapValue(value) => (value is $Value) ? value.$value : value;
 }
