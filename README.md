@@ -7,10 +7,7 @@ A dynamic template rendering engine for Dart that allows inline Dart expressions
 Add the following to your pubspec.yaml:
 ```yaml
 dependencies:
-  simple_template_engine:
-    git:
-      url: https://github.com/wdestroier/simple_template_engine.git
-
+  simple_template_engine: ^1.0.0
 ```
 
 ## Usage
