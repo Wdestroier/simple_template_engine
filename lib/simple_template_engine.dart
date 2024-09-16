@@ -33,8 +33,11 @@ class _TemplateEngine {
   }
 
   // Convert Symbol to String without dart:mirrors.
-  String _getArgumentName(Symbol symbol) =>
-      symbol.toString().replaceAll('Symbol("', '').replaceAll('")', '');
+  String _getArgumentName(Symbol symbol) {
+    final string = symbol.toString();
+    final (start, end) = ('Symbol("'.length, string.length - '")'.length);
+    return string.substring(start, end);
+  }
 
   _interpretTemplate(String template, Map<String, dynamic> arguments) {
     final library = _generateLibrary(template, arguments);
